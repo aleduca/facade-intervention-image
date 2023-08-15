@@ -20,11 +20,8 @@ class UploadImage
     {
         ['name' => $name, 'tmp_name' => $tmp_name] = $_FILES[$input_name];
 
-        $extension = pathinfo($name, PATHINFO_EXTENSION);
-
-        $this->upload['image'] = [
+        $this->upload = [
             'name' => $name,
-            'extension' => $extension,
         ];
 
         $this->image = $this->manager->make($tmp_name);
@@ -56,6 +53,8 @@ class UploadImage
     public function crop(int $width, int $height, ?int $x = null, ?int $y = null)
     {
         $this->image->crop($width, $height, $x, $y);
+
+        return $this;
     }
 
     public function fit(int $width, ?int $height = null, bool $constraint = false)
@@ -73,20 +72,21 @@ class UploadImage
 
     public function quality(int $quality)
     {
-        $this->upload['image']['quality'] = $quality;
+        $this->upload['quality'] = $quality;
 
         return $this;
     }
 
     public function execute()
     {
-        $image_new_name = uniqid() . '.' . $this->upload['image']['extension'];
-        $this->upload['image']['path'] = '/assets/images/' . $image_new_name;
-        $this->image->save(public_path() . $this->upload['image']['path'], $this->upload['image']['quality'] ?? 60);
+        $extension = pathinfo($this->upload['name'], PATHINFO_EXTENSION);
+        $image_new_name = uniqid() . '.' . $extension;
+        $this->upload['path'] = '/assets/images/' . $image_new_name;
+        $this->image->save(public_path() . $this->upload['path'], $this->upload['quality'] ?? 60);
     }
 
     public function get_image_info()
     {
-        return $this->upload['image'];
+        return $this->upload;
     }
 }
